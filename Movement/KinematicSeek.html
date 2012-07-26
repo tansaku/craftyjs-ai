@@ -14,32 +14,28 @@
 		});
 		
 		Crafty.c("Velocity",{
-		    _vx:0,
-		    _vy:0,
-		    _vr:0,
+			_velocity:{x:0,y:0,rotation:0},
 		    _time:1,
 		    init:function(){
 
 		        var viewport = Crafty.viewport.rect();
 		        this.bind("EnterFrame", function () {
 
-		            this.attr({x : (viewport._w + this.x + this._vx * this._time) % viewport._w,
-		                       y : (viewport._h + this.y + this._vy * this._time) % viewport._h,
-		                       rotation : (this.rotation + this._vr * this._time) % 360});
+		            this.attr({x : (viewport._w + this.x + this._velocity.x * this._time) % viewport._w,
+		                       y : (viewport._h + this.y + this._velocity.y * this._time) % viewport._h,
+		                       rotation : (this.rotation + this._velocity.rotation * this._time) % 360});
 		
 		        });
 		        return this;
 		    },
 		    velocity:function(x,y,rotation){
-		        this._vx = x;
-		        this._vy = y;
-		        this._vr = rotation;
+			    this._velocity = {x:x,y:y,rotation:rotation}
 		        return this;
 		    },
 			steering: function(x, y, rotation) {
-		        this._vx = this._vx + x * this._time;
-		        this._vy = this._vy + y * this._time;
-		        this._vr = this._vr + rotation * this._time;
+				this._velocity = {x: this._velocity.x+x * this._time,
+					              y: this._velocity.y+y * this._time,
+					              rotation: this._velocity.rotation+rotation * this._time};
 		        return this;
 		    }
 		});
