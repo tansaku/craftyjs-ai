@@ -6,41 +6,48 @@
 	<script type="text/javascript">
 		Crafty.init(400, 400);
 		
-		Crafty.sprite(1, "../images/facing.jpg", {
+		Crafty.sprite(1, "../images/facing-trans.png", {
 		    face: [0, 0]
 		});
-		Crafty.sprite(1, "../images/facing-red.jpg", {
+		Crafty.sprite(1, "../images/facing-red-trans.png", {
 		    face_red: [0, 0]
 		});
 		
 		Crafty.c("Velocity",{
-		    _vx:0,
-		    _vy:0,
-		    _vr:0,
+			_velocity:{x:0,y:0,rotation:0},
 		    _time:1,
 		    init:function(){
 
 		        var viewport = Crafty.viewport.rect();
 		        this.bind("EnterFrame", function () {
 
-		            this.attr({x : (viewport._w + this.x + this._vx * this._time) % viewport._w,
-		                       y : (viewport._h + this.y + this._vy * this._time) % viewport._h,
-		                       rotation : (this.rotation + this._vr * this._time) % 360});
+		            this.attr({x : (viewport._w + this.x + this._velocity.x * this._time) % viewport._w,
+		                       y : (viewport._h + this.y + this._velocity.y * this._time) % viewport._h});
+		
+					// orient in appropriate direction
+					this.rotation = this.getNewOrientation(this.rotation,this._velocity.x,this._velocity.y);
 		
 		        });
 		        return this;
 		    },
 		    velocity:function(x,y,rotation){
-		        this._vx = x;
-		        this._vy = y;
-		        this._vr = rotation;
+			    this._velocity = {x:x,y:y,rotation:rotation}
 		        return this;
 		    },
 			steering: function(x, y, rotation) {
-		        this._vx = this._vx + x * this._time;
-		        this._vy = this._vy + y * this._time;
-		        this._vr = this._vr + rotation * this._time;
+				this._velocity = {x: x,
+					              y: y};
 		        return this;
+		    },
+		    getNewOrientation: function(currentOrientation, vx, vy) {
+                var newOrientation = currentOrientation;
+		        // Make sure we have a velocity (if not just return current orientation)
+		        if (vx != 0 && vy != 0){
+		          // Calculate orientation using an arc tangent of
+		          // the velocity components. 
+		          newOrientation = (Math.atan2(vy,vx) * 180.0/ Math.PI) + 90.0;
+		        }
+		        return newOrientation;
 		    }
 		});
 		
@@ -53,7 +60,7 @@
 						var vx = this._target.x - this.x;
 						var vy = this._target.y - this.y;
 
-						// should normalize
+						// normalize
 						
 						var length = Math.sqrt((vx * vx) + (vy * vy));
 						vx = vx / length;
@@ -61,16 +68,14 @@
 
 						// switch to max speed
 
-						vx *= 0.05;
-						vy *= 0.05;
+						vx *= 2;
+						vy *= 2;
 
-						// orient in appropriate direction
-						var vr = this.getNewOrientation(this.rotation,vx,vy);
-						vr *= 0.0001;
+
 
 						// output steering
 						
-						this.steering(vx,vy,vr);
+						this.steering(vx,vy,0);
 
 	                }
 
@@ -80,30 +85,17 @@
 		    seek: function(target) {
 		        this._target = target;
 		        return this;
-		    },
-		    getNewOrientation: function(currentOrientation, vx, vy) {
-
-		        // Make sure we have a velocity
-		        if (vx > 0 && vy > 0)
-
-		        // Calculate orientation using an arc tangent of
-		        // the velocity components.
-		          return Math.atan2(-vx, vy);
-
-		        // Otherwise use the current orientation
-		        else 
-		          return currentOrientation;
 		    }
 		});
 
 		Crafty.c("RandomPosition", {
 			init: function() {
-				this.attr({ x: Crafty.math.randomInt(50,350), y: Crafty.math.randomInt(50,350), rotation: Crafty.math.randomInt(0,359)});
+				this.attr({ x: Crafty.math.randomInt(50,350), y: Crafty.math.randomInt(50,350), rotation: 0});
 			}
 		});
 
-		var target = Crafty.e("2D, DOM, Twoway, RandomPosition, Color, Velocity, face_red").twoway(3).attr({w: 50, h: 50}).origin('center').velocity(.3,.4,1);
-		var character = Crafty.e("2D, DOM, Twoway, RandomPosition, Color, Velocity, face, Seek").twoway(3).attr({w: 50, h: 50}).origin('center').velocity(0,0,0).seek(target);
+		var target = Crafty.e("2D, DOM, Twoway, RandomPosition, Color, Velocity, face_red").twoway(3).attr({w: 31, h: 42}).origin(15,35).velocity(2.2,2.2,0);
+		var character = Crafty.e("2D, DOM, Twoway, RandomPosition, Color, Velocity, face, Seek").twoway(3).attr({w: 31, h: 42}).origin(15,30).velocity(0,0,0).seek(target);
 		
 		
 	</script>
