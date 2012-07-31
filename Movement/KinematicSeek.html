@@ -55,6 +55,7 @@
 			_target: null,
 		    init: function() {
 		        var viewport = Crafty.viewport.rect();
+		        this.requires("Velocity").bind("EnterFrame");
 		        this.bind("EnterFrame", function() {
                     if(this._target){
 						var vx = this._target.x - this.x;
