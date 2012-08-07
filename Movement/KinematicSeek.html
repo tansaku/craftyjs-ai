@@ -33,7 +33,7 @@
 		Crafty.c("Velocity",{
 			_velocity:this._vector,
 			_rotation:0,
-		    _time:0.5,
+		    _time:1.0,
 		    init:function(){
  		        var viewport = Crafty.viewport.rect();
                 this.requires("Vector").bind("EnterFrame");
@@ -42,6 +42,8 @@
                     // updates position according to current velocity wrapped for toroid
 		            this.attr({x : (viewport._w + this.x + this._velocity.x * this._time) % viewport._w,
 		                       y : (viewport._h + this.y + this._velocity.y * this._time) % viewport._h});
+		
+		            // TODO non-toroidal ... consider whether we have bounce on edges?
 		
 					// orient in direction of travel
 					this.rotation = this.getNewOrientation();
@@ -76,115 +78,157 @@
 		
 		Crafty.c("Seek", {
 			_target: null,
-			_radius: 2,
-			_timeToTarget: 2,
-			_maxSpeed: 2.4,
-			_fleePointX: 0,
-			_fleePointY: 0,
-			_seekDistanceX: 0,
-			_seekDistanceY: 0,
-			_altSeekDistanceX: 0,
-			_altSeekDistanceY: 0,
-			_seekDistanceX: 0,
-			_seekDistanceY: 0,
-			_altSeekDistanceX: 0,
-			_altSeekDistanceY: 0,
+			_targetVector: {x:0,y:0},
+			_radius: 1,
+			_timeToTarget: 4,
+			_maxSpeed: 2.8,
+			_targetDistanceVector: {x:0,y:0},
+			_targetAltDistanceVector: {x:0,y:0},
+			_steeringVector: {x:0,y:0},
+			setTargetVector: function() {
+			    // default seek behaviour (not flee point)
+			    return {x:this._target.x,y:this._target.y};
+			},
+			setTargetDistanceVector: function() {
+			    // default seek behaviour (not flee distance)
+			    return {x:this._targetVector.x - this.x,y:this._targetVector.y - this.y};	
+			},
+			steeringVectorInit: function() {
+			    // default seek behaviour (not flee distance)
+			    return {x:this._targetDistanceVector.x,y:this._targetDistanceVector.y};	
+			},
+			updateSteeringVector: function() {
+				// default to non-toroidal seek
+				return this.steeringVectorInit();
+			},
+			arrived: function(length) {
+			    return length < this._radius;
+			},
+			arrival: function() {
+			    // default is closing in on a single point, appropriate for seek and flee to point	
+				var length = this.magnitude(this._steeringVector.x,this._steeringVector.y);
+				
+				// Check if we’re within radius
+			    if(this.arrived(length)){
+				
+					// We can return no steering request
+				  	this.steering(0,0);
+				}
+				else
+				{
+					// We need to move to our target, we’d like to
+					// get there in timeToTarget seconds
+					this._steeringVector.x = this._steeringVector.x / this._timeToTarget;
+					this._steeringVector.y = this._steeringVector.y / this._timeToTarget;
+
+                    length = this.magnitude(this._steeringVector.x,this._steeringVector.y);
+					// normalize
+				
+					if(length > this._maxSpeed)
+					{
+						this._steeringVector.x = this._steeringVector.x / length;
+						this._steeringVector.y = this._steeringVector.y / length;
+
+						// switch to max speed
+
+						this._steeringVector.x *= this._maxSpeed;
+						this._steeringVector.y *= this._maxSpeed;
+					}
+
+					// output steering
+				
+					this.steering(this._steeringVector.x,this._steeringVector.y);
+				}
+			},
 		    init: function() {
 		        var viewport = Crafty.viewport.rect();
 		        this.requires("Velocity").bind("EnterFrame");
 		        this.bind("EnterFrame", function() {
                     if(this._target){
 						var viewport = Crafty.viewport.rect();
-						// TODO sort this all out so toroidal constraint is OPTIONAL
 						
-						// given a toroid can think of a flee point we are trying to move towards that 
-	                    // is the furthest point on the toroid from the target ...
-	                    this._fleePointX = (this._target.x + viewport._w/2) % viewport._w; 
-	                    this._fleePointY = (this._target.y + viewport._h/2) % viewport._h;
-
-						var targetX = this._target.x; // set these to fleepoint to get toroidal flee
-						var targetY = this._target.y; // set these to fleepoint to get toroidal flee
-	                    this._fleeDistanceX = this.x - targetX;
-	                    this._seekDistanceX = targetX - this.x;
-	                    this._fleeDistanceY = this.y - targetY;
-	                    this._seekDistanceY = targetY - this.y;
-
-	                    this._altSeekDistanceX = (viewport._w - Math.abs(this._seekDistanceX)) * - this._seekDistanceX/Math.abs(this._seekDistanceX);
-	                    this._altSeekDistanceY = (viewport._h - Math.abs(this._seekDistanceY)) * - this._seekDistanceY/Math.abs(this._seekDistanceY);
-	
-	                    this._altFleeDistanceX = (viewport._w - Math.abs(this._fleeDistanceX)) * - this._fleeDistanceX/Math.abs(this._fleeDistanceX);
-	                    this._altFleeDistanceY = (viewport._h - Math.abs(this._fleeDistanceY)) * - this._fleeDistanceY/Math.abs(this._fleeDistanceY);
-	
-	
-                        // setting these all negative produces toroidal fleeing of the kind I would
-                        // expect, but we still get thrashing, and to solve that we need flee point?
-                        // or maybe that's normal?	
-	                    var vx = this._seekDistanceX;
-	                    var vy = this._seekDistanceY;
-	
-	                    // this ensures we respect the toroid, and don't throw away directionality
-						if(Math.abs(this._altSeekDistanceX) < Math.abs(this._seekDistanceX)){
-						  vx = this._altSeekDistanceX; // comment these out and the character won't follow round toroid
-						}
-						if(Math.abs(this._altSeekDistanceY) < Math.abs(this._seekDistanceY)){
-						  vy = this._altSeekDistanceY; // comment these out and the character won't follow round toroid
-						}
-
-	                    //var vx = this._fleeDistanceX;
-	                    //var vy = this._fleeDistanceY;
-	
-	                    // this doesn't work as expected
-						//if(Math.abs(this._altfleeDistanceX) > Math.abs(this._fleeDistanceX)){
-						  //vx = this._altFleeDistanceX;
-						//}
-						//if(Math.abs(this._altFleeDistanceY) > Math.abs(this._fleeDistanceY)){
-						  //vy = this._altFleeDistanceY;
-						//}
-
-						var length = Math.sqrt((vx * vx) + (vy * vy));
+						this._targetVector = this.setTargetVector();
 						
-						// Check if we’re within radius
-					    if(length < this._radius){
+						this._targetDistanceVector = this.setTargetDistanceVector();
+
+						this._steeringVector = this.updateSteeringVector();
 						
-						// We can return no steering request
-						  this.steering(0,0,0);
-						}
-						else
-						{
-						
-							 // We need to move to our target, we’d like to
-							// get there in timeToTarget seconds
-							vx = vx / this._timeToTarget;
-							vy = vy / this._timeToTarget;
-
-	                        length = Math.sqrt((vx * vx) + (vy * vy));
-							// normalize
-						
-							if(length > this._maxSpeed)
-							{
-								vx = vx / length;
-								vy = vy / length;
-
-								// switch to max speed
-
-								vx *= this._maxSpeed;
-								vy *= this._maxSpeed;
-							}
-
-							// output steering
-						
-							this.steering(vx,vy,0);
-						}
-
+	 					this.arrival();
 	                }
-
 		        });
 		        return this;
 		    },
 		    seek: function(target) {
 		        this._target = target;
 		        return this;
+		    },
+		    maxSpeed: function(maxSpeed) {
+		        this._maxSpeed = maxSpeed;
+		        return this;
+		    },
+		    radius: function(radius) {
+		        this._radius = radius;
+		        return this;
+		    },
+		    timeToTarget: function(timeToTarget) {
+		        this._timeToTarget = timeToTarget;
+		        return this;
 		    }
+		});
+	
+		Crafty.c("Toroidal", {		
+			updateSteeringVector: function() {
+				var steeringVector = this.steeringVectorInit();
+				// calculates the alternate toroidal distances
+				var viewport = Crafty.viewport.rect();
+				this._targetAltDistanceVector.x = (viewport._w - Math.abs(this._targetDistanceVector.x)) * - this._targetDistanceVector.x/Math.abs(this._targetDistanceVector.x);
+                this._targetAltDistanceVector.y = (viewport._h - Math.abs(this._targetDistanceVector.y)) * - this._targetDistanceVector.y/Math.abs(this._targetDistanceVector.y);
+
+                // prefers steering across shortest path given toroid
+ 				if(Math.abs(this._targetAltDistanceVector.x) < Math.abs(this._targetDistanceVector.x)){
+				    steeringVector.x = this._targetAltDistanceVector.x; 
+				}
+				if(Math.abs(this._targetAltDistanceVector.y) < Math.abs(this._targetDistanceVector.y)){
+				    steeringVector.y = this._targetAltDistanceVector.y; 
+				}	
+				return steeringVector;
+			},
+		    init: function() {
+			    this.requires("Seek").bind("EnterFrame");
+			    return this;
+			}
+		});
+		
+		Crafty.c("FleePoint", {		
+			// this assumes we are fleeing to a point on a toroid
+			_fleePoint: {x:0,y:0},
+			setTargetVector: function() {
+				// given a toroid can think of a flee point we are trying to move towards that 
+                // is the furthest point on the toroid from the target ...
+	            var viewport = Crafty.viewport.rect();
+				this._fleePoint.x = (this._target.x + viewport._w/2) % viewport._w; 
+                this._fleePoint.y = (this._target.y + viewport._h/2) % viewport._h;
+			    return {x:this._fleePoint.x,y:this._fleePoint.y}	
+			},
+		    init: function() {
+			    this.requires("Toroidal").bind("EnterFrame");
+			    return this;
+			}
+		});
+			
+		Crafty.c("Flee", {
+			setTargetDistanceVector: function() {
+			    // gives flee distance
+			    return {x:this.x - this._targetVector.x ,y: this.y - this._targetVector.y};	
+			},
+			arrived: function(length) {
+				var viewport = Crafty.viewport.rect();
+			    return ((length + 20) >= this.magnitude(viewport._w/2, viewport._h/2));
+			},
+		    init: function() {
+			    this.requires("Seek").bind("EnterFrame");
+			    return this;
+			}
 		});
 
 		Crafty.c("RandomPosition", {
@@ -195,7 +239,12 @@
 
 		var target = Crafty.e("2D, DOM, Twoway, RandomPosition, Vector, Velocity, face_red, HTML").twoway(3).attr({w: 31, h: 42}).origin(15,35).velocity(-1,-2,0);
 		var character = Crafty.e("2D, DOM, Twoway, RandomPosition, Vector, Velocity, face, Seek, HTML").twoway(3).attr({w: 31, h: 42}).origin(15,30).velocity(0,0,0).seek(target);
-		
+		var character2 = Crafty.e("2D, DOM, Twoway, RandomPosition, Vector, Velocity, face, Seek, Toroidal, HTML").twoway(3).attr({w: 31, h: 42}).origin(15,30).velocity(0,0,0).seek(target);
+		var character3 = Crafty.e("2D, DOM, Twoway, RandomPosition, Vector, Velocity, face, Seek, Toroidal, FleePoint, HTML").twoway(3).attr({w: 31, h: 42}).origin(15,30).velocity(0,0,0).seek(target);
+		var character4 = Crafty.e("2D, DOM, Twoway, RandomPosition, Vector, Velocity, face, Seek, Toroidal, Flee, HTML").twoway(3).attr({w: 31, h: 42}).origin(15,30).velocity(0,0,0).seek(target);
+			var character5 = Crafty.e("2D, DOM, Twoway, RandomPosition, Vector, Velocity, face, Seek, Flee, HTML").twoway(3).attr({w: 31, h: 42}).origin(15,30).velocity(0,0,0).seek(target);
+
+/*		
 		var characterTxt = Crafty.e("2D, DOM, Text")
 		    .attr({x:10, y:10, w:200, h:50})
 		    .css({"font": "10pt Arial", "color": "#000", "text-align": "left"});
@@ -214,17 +263,17 @@
 
 
 		Crafty.bind("EnterFrame", function () {
-/*
+
 		    targetTxt.text("Red position: "+target.x.toFixed(0)+", "+target.y.toFixed(0)+"")
 		    characterTxt.text("Black position: "+character.x.toFixed(0)+", "+character.y.toFixed(0)+"")
 		    //exTargetTxt.text("Red position: "+target.x.toFixed(0)+", "+target.y.toFixed(0)+"")
-		    fleeCharacterTxt.text("Black flee point: "+character._fleePointX.toFixed(0)+", "+character._fleePointY.toFixed(0)+"")
-		    seekCharacterTxt.text("Black flee distance: "+character._fleeDistanceX.toFixed(0)+", "+character._fleeDistanceY.toFixed(0)+"")
-		    altSeekCharacterTxt.text("Black alt flee distance: "+character._altFleeDistanceX.toFixed(0)+", "+character._altFleeDistanceY.toFixed(0)+"")
-*/
+		   // fleeCharacterTxt.text("Black flee point: "+character._fleePointX.toFixed(0)+", "+character._fleePointY.toFixed(0)+"")
+		    seekCharacterTxt.text("Black seek distance: "+character._targetDistanceVector.x.toFixed(0)+", "+character._targetDistanceVector.y.toFixed(0)+"")
+		    altSeekCharacterTxt.text("Black alt seek distance: "+character._targetAltDistanceVector.x.toFixed(0)+", "+character._targetAltDistanceVector.y.toFixed(0)+"")
+
 		});
 		
-		
+*/
 	</script>
 </body>
 </html>
