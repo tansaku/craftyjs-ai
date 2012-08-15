@@ -34,6 +34,7 @@
 			_velocity:this._vector,
 			_rotation:0,
 		    _time:1.0,
+			_maxSpeed: 2.8,
 		    init:function(){
  		        var viewport = Crafty.viewport.rect();
                 this.requires("Vector").bind("EnterFrame");
@@ -73,6 +74,10 @@
 		          newOrientation = (Math.atan2(this._velocity.y,this._velocity.x) * 180.0/ Math.PI) + 90.0;
 		        }
 		        return newOrientation;
+		    },
+		    maxSpeed: function(maxSpeed) {
+		        this._maxSpeed = maxSpeed;
+		        return this;
 		    }
 		});
 		
@@ -81,7 +86,6 @@
 			_targetVector: {x:0,y:0},
 			_radius: 1,
 			_timeToTarget: 4,
-			_maxSpeed: 2.8,
 			_targetDistanceVector: {x:0,y:0},
 			_targetAltDistanceVector: {x:0,y:0},
 			_steeringVector: {x:0,y:0},
@@ -162,10 +166,6 @@
 		        this._target = target;
 		        return this;
 		    },
-		    maxSpeed: function(maxSpeed) {
-		        this._maxSpeed = maxSpeed;
-		        return this;
-		    },
 		    radius: function(radius) {
 		        this._radius = radius;
 		        return this;
@@ -231,18 +231,33 @@
 			}
 		});
 
+		Crafty.c("Wander", {
+			_maxRotation: 5,
+			getNewOrientation: function() {
+                var newOrientation = this._rotation + (Math.random() - Math.random()) * this._maxRotation;
+                var vx = Math.sin(newOrientation * (Math.PI/180)) * this._maxSpeed;
+                var vy = -Math.cos(newOrientation * (Math.PI/180)) * this._maxSpeed;
+				this.steering(vx,vy);
+		        return newOrientation;
+		    },
+		    init: function() {
+			    this.requires("Velocity").bind("EnterFrame");
+			    return this;
+			}
+		});
+
 		Crafty.c("RandomPosition", {
 			init: function() {
 				this.attr({ x: Crafty.math.randomInt(50,350), y: Crafty.math.randomInt(50,350), rotation: 0});
 			}
 		});
 
-		var target = Crafty.e("2D, DOM, Twoway, RandomPosition, Vector, Velocity, face_red, HTML").twoway(3).attr({w: 31, h: 42}).origin(15,35).velocity(-1,-2,0);
+		var target = Crafty.e("2D, DOM, Twoway, RandomPosition, Vector, Velocity, Wander, face_red, HTML").twoway(3).attr({w: 31, h: 42}).origin(15,35).velocity(-1,-2,0);
 		var character = Crafty.e("2D, DOM, Twoway, RandomPosition, Vector, Velocity, face, Seek, HTML").twoway(3).attr({w: 31, h: 42}).origin(15,30).velocity(0,0,0).seek(target);
 		var character2 = Crafty.e("2D, DOM, Twoway, RandomPosition, Vector, Velocity, face, Seek, Toroidal, HTML").twoway(3).attr({w: 31, h: 42}).origin(15,30).velocity(0,0,0).seek(target);
 		var character3 = Crafty.e("2D, DOM, Twoway, RandomPosition, Vector, Velocity, face, Seek, Toroidal, FleePoint, HTML").twoway(3).attr({w: 31, h: 42}).origin(15,30).velocity(0,0,0).seek(target);
 		var character4 = Crafty.e("2D, DOM, Twoway, RandomPosition, Vector, Velocity, face, Seek, Toroidal, Flee, HTML").twoway(3).attr({w: 31, h: 42}).origin(15,30).velocity(0,0,0).seek(target);
-			var character5 = Crafty.e("2D, DOM, Twoway, RandomPosition, Vector, Velocity, face, Seek, Flee, HTML").twoway(3).attr({w: 31, h: 42}).origin(15,30).velocity(0,0,0).seek(target);
+		var character5 = Crafty.e("2D, DOM, Twoway, RandomPosition, Vector, Velocity, face, Seek, Flee, HTML").twoway(3).attr({w: 31, h: 42}).origin(15,30).velocity(0,0,0).seek(target);
 
 /*		
 		var characterTxt = Crafty.e("2D, DOM, Text")
