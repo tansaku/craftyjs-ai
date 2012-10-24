@@ -14,7 +14,6 @@
 		});
 		
 		Crafty.c("Velocity",{
-			
 			_rotation:0,
 		    _time:1.0,
 			_maxSpeed: 2.8,
@@ -24,8 +23,8 @@
 		        this.bind("EnterFrame", function () {
 
                     // updates position according to current velocity wrapped for toroid
-		            this.attr({x : (viewport._w + this.x + this._velocity.x * this._time) % viewport._w,
-		                       y : (viewport._h + this.y + this._velocity.y * this._time) % viewport._h});
+		            this.x = (viewport._w + this.x + this._velocity.x * this._time) % viewport._w;
+		            this.y = (viewport._h + this.y + this._velocity.y * this._time) % viewport._h;
 		
 		            // TODO non-toroidal ... consider whether we have bounce on edges?
 		
@@ -235,11 +234,11 @@
 
 		var target = Crafty.e("2D, DOM, Twoway, RandomPosition, Vector, Velocity, Wander, face_red, HTML").twoway(3).attr({w: 31, h: 42}).origin(15,35).velocity(-1,-2,0);
 		var character = Crafty.e("2D, DOM, Twoway, RandomPosition, Vector, Velocity, face, Seek, HTML").twoway(3).attr({w: 31, h: 42}).origin(15,30).velocity(0,0,0).seek(target);
-		var character2 = Crafty.e("2D, DOM, Twoway, RandomPosition, Vector, Velocity, face, Seek, Toroidal, HTML").twoway(3).attr({w: 31, h: 42}).origin(15,30).velocity(0,0,0).seek(target);
-		var character3 = Crafty.e("2D, DOM, Twoway, RandomPosition, Vector, Velocity, face, Seek, Toroidal, FleePoint, HTML").twoway(3).attr({w: 31, h: 42}).origin(15,30).velocity(0,0,0).seek(target);
+		//var character2 = Crafty.e("2D, DOM, Twoway, RandomPosition, Vector, Velocity, face, Seek, Toroidal, HTML").twoway(3).attr({w: 31, h: 42}).origin(15,30).velocity(0,0,0).seek(target);
+		//var character3 = Crafty.e("2D, DOM, Twoway, RandomPosition, Vector, Velocity, face, Seek, Toroidal, FleePoint, HTML").twoway(3).attr({w: 31, h: 42}).origin(15,30).velocity(0,0,0).seek(target);
 		
-	    var character4 = Crafty.e("2D, DOM, Twoway, RandomPosition, Vector, Velocity, face, Seek, Toroidal, Flee, HTML").twoway(3).attr({w: 31, h: 42}).origin(15,30).velocity(0,0,0).seek(target);
-		var character5 = Crafty.e("2D, DOM, Twoway, RandomPosition, Vector, Velocity, face, Seek, Flee, HTML").twoway(3).attr({w: 31, h: 42}).origin(15,30).velocity(0,0,0).seek(target);
+	    //var character4 = Crafty.e("2D, DOM, Twoway, RandomPosition, Vector, Velocity, face, Seek, Toroidal, Flee, HTML").twoway(3).attr({w: 31, h: 42}).origin(15,30).velocity(0,0,0).seek(target);
+		//var character5 = Crafty.e("2D, DOM, Twoway, RandomPosition, Vector, Velocity, face, Seek, Flee, HTML").twoway(3).attr({w: 31, h: 42}).origin(15,30).velocity(0,0,0).seek(target);
 
 // file:///Users/samueljoseph/Documents/HPU/CSCI3651-GamesProgramming-Fall-2012/GameAI-js/craftyjs-ai/Movement/KinematicSeek.html
 /*		
