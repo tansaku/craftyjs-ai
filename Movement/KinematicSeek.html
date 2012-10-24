@@ -12,32 +12,15 @@
 		Crafty.sprite(1, "../images/facing-red-trans.png", {
 		    face_red: [0, 0]
 		});
-
-		Crafty.c("Vector",{
-			_vector:{x:0,y:0},
-			init:function(){
-				return this;
-			},
-			vector:function(x,y){
-			    this._vector = {x:x,y:y};
-		        return this;
-		    },
-			magnitude:function(){
-			   return this.magnitude(this._vector.x,this._vector.x);
-		    },
-			magnitude:function(x,y){
-			   return Math.sqrt((x * x) + (y * y));
-		    }
-		});
 		
 		Crafty.c("Velocity",{
-			_velocity:this._vector,
+			
 			_rotation:0,
 		    _time:1.0,
 			_maxSpeed: 2.8,
 		    init:function(){
  		        var viewport = Crafty.viewport.rect();
-                this.requires("Vector").bind("EnterFrame");
+                this._velocity = new Crafty.math.Vector2D();
 		        this.bind("EnterFrame", function () {
 
                     // updates position according to current velocity wrapped for toroid
@@ -53,7 +36,8 @@
 		        return this;
 		    },
 			steering: function(x, y) {
-				this._velocity = {x:x,y:y};
+                this._velocity.x = x;
+                this._velocity.y = y;
 		        return this;
 		    },
 		    velocity: function(x,y,rotation){
@@ -68,7 +52,7 @@
 		    getNewOrientation: function() {
                 var newOrientation = this._rotation;
 		        // Make sure we have a velocity (if not just return current orientation)
-		        if (this.magnitude() !== 0){
+		        if (this._velocity.magnitude() !== 0){
 		          // Calculate orientation using an arc tangent of
 		          // the velocity components. 
 		          newOrientation = (Math.atan2(this._velocity.y,this._velocity.x) * 180.0/ Math.PI) + 90.0;
@@ -83,23 +67,19 @@
 		
 		Crafty.c("Seek", {
 			_target: null,
-			_targetVector: {x:0,y:0},
 			_radius: 1,
 			_timeToTarget: 4,
-			_targetDistanceVector: {x:0,y:0},
-			_targetAltDistanceVector: {x:0,y:0},
-			_steeringVector: {x:0,y:0},
 			setTargetVector: function() {
 			    // default seek behaviour (not flee point)
-			    return {x:this._target.x,y:this._target.y};
+			    return new Crafty.math.Vector2D(this._target.x,this._target.y);
 			},
 			setTargetDistanceVector: function() {
 			    // default seek behaviour (not flee distance)
-			    return {x:this._targetVector.x - this.x,y:this._targetVector.y - this.y};	
+			    return new Crafty.math.Vector2D(this._targetVector.x - this.x,this._targetVector.y - this.y);	
 			},
 			steeringVectorInit: function() {
 			    // default seek behaviour (not flee distance)
-			    return {x:this._targetDistanceVector.x,y:this._targetDistanceVector.y};	
+			    return new Crafty.math.Vector2D(this._targetDistanceVector.x,this._targetDistanceVector.y);
 			},
 			updateSteeringVector: function() {
 				// default to non-toroidal seek
@@ -110,7 +90,7 @@
 			},
 			arrival: function() {
 			    // default is closing in on a single point, appropriate for seek and flee to point	
-				var length = this.magnitude(this._steeringVector.x,this._steeringVector.y);
+				var length = this._steeringVector.magnitude();
 				
 				// Check if we’re within radius
 			    if(this.arrived(length)){
@@ -125,7 +105,7 @@
 					this._steeringVector.x = this._steeringVector.x / this._timeToTarget;
 					this._steeringVector.y = this._steeringVector.y / this._timeToTarget;
 
-                    length = this.magnitude(this._steeringVector.x,this._steeringVector.y);
+                    length = this._steeringVector.magnitude();
 					// normalize
 				
 					if(length > this._maxSpeed)
@@ -152,8 +132,8 @@
 						var viewport = Crafty.viewport.rect();
 						
 						this._targetVector = this.setTargetVector();
-						
 						this._targetDistanceVector = this.setTargetDistanceVector();
+						this._targetAltDistanceVector = new Crafty.math.Vector2D();
 
 						this._steeringVector = this.updateSteeringVector();
 						
@@ -200,15 +180,15 @@
 		});
 		
 		Crafty.c("FleePoint", {		
-			// this assumes we are fleeing to a point on a toroid
-			_fleePoint: {x:0,y:0},
 			setTargetVector: function() {
+				// this assumes we are fleeing to a point on a toroid
+			    this._fleePoint =  new Crafty.math.Vector2D();
 				// given a toroid can think of a flee point we are trying to move towards that 
                 // is the furthest point on the toroid from the target ...
 	            var viewport = Crafty.viewport.rect();
 				this._fleePoint.x = (this._target.x + viewport._w/2) % viewport._w; 
                 this._fleePoint.y = (this._target.y + viewport._h/2) % viewport._h;
-			    return {x:this._fleePoint.x,y:this._fleePoint.y}	
+			    return this._fleePoint;	
 			},
 		    init: function() {
 			    this.requires("Toroidal").bind("EnterFrame");
@@ -219,11 +199,12 @@
 		Crafty.c("Flee", {
 			setTargetDistanceVector: function() {
 			    // gives flee distance
-			    return {x:this.x - this._targetVector.x ,y: this.y - this._targetVector.y};	
+			    return new Crafty.math.Vector2D(this.x - this._targetVector.x ,this.y - this._targetVector.y);	
 			},
 			arrived: function(length) {
 				var viewport = Crafty.viewport.rect();
-			    return ((length + 20) >= this.magnitude(viewport._w/2, viewport._h/2));
+				var vector = new Crafty.math.Vector2D(viewport._w/2, viewport._h/2);
+			    return ((length + 20) >= vector.magnitude());
 			},
 		    init: function() {
 			    this.requires("Seek").bind("EnterFrame");
@@ -256,9 +237,11 @@
 		var character = Crafty.e("2D, DOM, Twoway, RandomPosition, Vector, Velocity, face, Seek, HTML").twoway(3).attr({w: 31, h: 42}).origin(15,30).velocity(0,0,0).seek(target);
 		var character2 = Crafty.e("2D, DOM, Twoway, RandomPosition, Vector, Velocity, face, Seek, Toroidal, HTML").twoway(3).attr({w: 31, h: 42}).origin(15,30).velocity(0,0,0).seek(target);
 		var character3 = Crafty.e("2D, DOM, Twoway, RandomPosition, Vector, Velocity, face, Seek, Toroidal, FleePoint, HTML").twoway(3).attr({w: 31, h: 42}).origin(15,30).velocity(0,0,0).seek(target);
-		var character4 = Crafty.e("2D, DOM, Twoway, RandomPosition, Vector, Velocity, face, Seek, Toroidal, Flee, HTML").twoway(3).attr({w: 31, h: 42}).origin(15,30).velocity(0,0,0).seek(target);
+		
+	    var character4 = Crafty.e("2D, DOM, Twoway, RandomPosition, Vector, Velocity, face, Seek, Toroidal, Flee, HTML").twoway(3).attr({w: 31, h: 42}).origin(15,30).velocity(0,0,0).seek(target);
 		var character5 = Crafty.e("2D, DOM, Twoway, RandomPosition, Vector, Velocity, face, Seek, Flee, HTML").twoway(3).attr({w: 31, h: 42}).origin(15,30).velocity(0,0,0).seek(target);
 
+// file:///Users/samueljoseph/Documents/HPU/CSCI3651-GamesProgramming-Fall-2012/GameAI-js/craftyjs-ai/Movement/KinematicSeek.html
 /*		
 		var characterTxt = Crafty.e("2D, DOM, Text")
 		    .attr({x:10, y:10, w:200, h:50})
