@@ -213,18 +213,15 @@ var altSeekCharacterTxt = Crafty.e("2D, DOM, Text").attr({
     "text-align": "left"
 });
 
-
 Crafty.bind("EnterFrame", function() {
 
-    targetTxt.text("Blue position: " + target.x.toFixed(0) + ", " + target.y.toFixed(0) + "")
-    characterTxt.text("Red position: " + character.x.toFixed(0) + ", " + character.y.toFixed(0) + "")
+    targetTxt.text("Blue position: " + target.x.toFixed(0) + ", " + target.y.toFixed(0) + "");
+    characterTxt.text("Red position: " + character.x.toFixed(0) + ", " + character.y.toFixed(0) + "");
     //exTargetTxt.text("Red position: "+target.x.toFixed(0)+", "+target.y.toFixed(0)+"")
     // fleeCharacterTxt.text("Black flee point: "+character._fleePointX.toFixed(0)+", "+character._fleePointY.toFixed(0)+"")
     
     //altSeekCharacterTxt.text("Red alt seek distance: " + character._targetAltDistanceVector.x.toFixed(0) + ", " + character._targetAltDistanceVector.y.toFixed(0) + "")
-
 });
-
 </script>
 </body>
 </html>
