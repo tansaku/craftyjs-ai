@@ -14,7 +14,7 @@
 		});
 		
 		Crafty.c("Velocity",{
-			_rotation:0,
+			_angular_velocity:0,
 		    _time:1.0,
 			_maxSpeed: 2.8,
 		    init:function(){
@@ -39,9 +39,9 @@
                 this._velocity.y = y;
 		        return this;
 		    },
-		    velocity: function(x,y,rotation){
+		    velocity: function(x,y,angular_velocity){
 			    this.steering(x,y);
-			    this._rotation = rotation;
+			    this.angular_velocity = angular_velocity;
 		        return this;
 		    },
 			time: function(time) {
@@ -94,33 +94,17 @@
 				// Check if we’re within radius
 			    if(this.arrived(length)){
 				
-					// We can return no steering request
-				  	this.steering(0,0);
+					// we have arrived, set intended velocity to zero
+				  	this._steeringVector.setValues(0,0);
 				}
 				else
 				{
 					// We need to move to our target, we’d like to
 					// get there in timeToTarget seconds
-					this._steeringVector.x = this._steeringVector.x / this._timeToTarget;
-					this._steeringVector.y = this._steeringVector.y / this._timeToTarget;
+					this._steeringVector.divide(this._timeToTarget);
 
-                    length = this._steeringVector.magnitude();
-					// normalize
-				
-					if(length > this._maxSpeed)
-					{
-						this._steeringVector.x = this._steeringVector.x / length;
-						this._steeringVector.y = this._steeringVector.y / length;
-
-						// switch to max speed
-
-						this._steeringVector.x *= this._maxSpeed;
-						this._steeringVector.y *= this._maxSpeed;
-					}
-
-					// output steering
-				
-					this.steering(this._steeringVector.x,this._steeringVector.y);
+                    this._steeringVector.normalize();
+                    this._steeringVector.scaleToMagnitude(this._maxSpeed);
 				}
 			},
 		    init: function() {
@@ -137,6 +121,10 @@
 						this._steeringVector = this.updateSteeringVector();
 						
 	 					this.arrival();
+						// output steering
+				
+						this.steering(this._steeringVector.x,this._steeringVector.y);
+
 	                }
 		        });
 		        return this;
