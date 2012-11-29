@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<head>  
+    <script type="text/javascript" src="http://cdn.craftycomponents.com/crafty-release.js"></script>
+</head>
+<body>
+    <script type="text/javascript">
+
+        Crafty.init();
+        Crafty.canvas.init();
+
+        // remote images moving seem to be reloaded each time?
+
+        Crafty.sprite(1, "../images/facing-trans.png", {
+            face: [0, 0]
+        });
+        Crafty.sprite(1, "../images/facing-red-trans.png", {
+            face_red: [0, 0]
+        });
+
+        Crafty.c("Velocity", {
+            _MF_rotation: 0,
+            _time: 0.1,
+            _maxSpeed: 2,
+            init: function() {
+                var viewport = Crafty.viewport.rect();
+                this._velocity = new Crafty.math.Vector2D();
+                this.bind("EnterFrame", function() {
+                    // updates toriodal position using current velocity 
+                    this.x = (viewport._w + this.x + this._velocity.x * this._time) % viewport._w;
+                    this.y = (viewport._h + this.y + this._velocity.y * this._time) % viewport._h;
+                    this.rotation += this._MF_rotation * this._time;
+                });
+                return this;
+            },
+            velocity: function(x, y, MF_rotation) {
+                this._velocity.x = x;
+                this._velocity.y = y;
+                this._MF_rotation = MF_rotation;
+                return this;
+            },
+            position: function() {
+                return new Crafty.math.Vector2D(this._x, this._y);
+            },
+            getNewOrientation: function() {
+                var newOrientation = this._rotation;
+                // Make sure we have a velocity (if not just return current orientation)
+                if (this._velocity.magnitude() !== 0) {
+                    // Calculate orientation using an arc tangent of
+                    // the velocity components. 
+                    newOrientation = (Math.atan2(this._velocity.y, this._velocity.x) * 180.0 / Math.PI) + 90.0;
+                }
+                return newOrientation;
+            }
+        });
+
+        Crafty.c("Seek", {
+            _count: 0,
+            _radius: 0,
+            _timeToTarget: 1,
+            init: function() {
+                var viewport = Crafty.viewport.rect();
+                this.requires("Velocity").bind("EnterFrame");
+                this.bind("EnterFrame", function() {
+                    if (this._target) {
+                        this._steeringVector = this._target.position().subtract(this.position());
+                        
+                        seekCharacterTxt.text("Red steering vector (Raw): " + character._steeringVector.x.toFixed(0) + ", " + character._steeringVector.y.toFixed(0) + ", vel=" + this._steeringVector.magnitude().toFixed(0)+ ", max=" + this._maxSpeed)
+
+                        if (this._steeringVector.magnitude() < this._radius) {
+                            this._steeringVector.setValues(0, 0);
+                        } else {
+                            // We need to move to our target, we’d like to
+                            // get there in timeToTarget seconds
+                            this._steeringVector.x /= this._timeToTarget;
+                            this._steeringVector.y /= this._timeToTarget;
+
+                            if (this._steeringVector.magnitude() > this._maxSpeed) {
+                               this._steeringVector.normalize();
+                               this._steeringVector.scale(this._maxSpeed);
+                            }
+
+                            this.rotation = this.getNewOrientation();
+                        }
+                        
+                        altSeekCharacterTxt.text("Red steering vector (clipped): " + character._steeringVector.x.toFixed(0) + ", " + character._steeringVector.y.toFixed(0) + ", vel=" + this._steeringVector.magnitude().toFixed(0)+ ", max=" + this._maxSpeed)
+
+                        this._angularVelocity = 0; // could be pulled out
+                        this.velocity(this._steeringVector.x, this._steeringVector.y, this._angularVelocity)
+                    }
+                    return this;
+                });
+            },
+            seek: function(target) {
+                this._target = target;
+                return this;
+            }
+        });
+
+        Crafty.c("Wander", {
+            _maxRotation: 5,
+            getNewOrientation: function() {
+                var newOrientation = this._rotation + (Math.random() - Math.random()) * this._maxRotation;
+                var vx = Math.sin(newOrientation * (Math.PI / 180)) * this._maxSpeed;
+                var vy = -Math.cos(newOrientation * (Math.PI / 180)) * this._maxSpeed;
+                this.velocity(vx, vy, 0);
+                return newOrientation;
+            },
+            init: function() {
+                this.requires("Velocity").bind("EnterFrame");
+                this.bind("EnterFrame", function() {
+                    this.rotation = this.getNewOrientation();
+                });
+                return this;
+            }
+        });
+
+        Crafty.c("RandomPosition", {
+            init: function() {
+                this.attr({
+                    x: Crafty.math.randomInt(50, 350),
+                    y: Crafty.math.randomInt(50, 350),
+                    rotation: 0
+                });
+            }
+        });
+        var target = Crafty.e("2D, DOM, Twoway, RandomPosition, face_red,  Wander, Velocity").twoway(3).attr({
+            w: 31,
+            h: 42
+        }).origin(15,35).velocity(0, 0, 0);
+
+        var character = Crafty.e("2D, DOM, Twoway, RandomPosition, face, Velocity, face, Seek").twoway(3).attr({
+            w: 31,
+            h: 42
+        }).origin(15,35).velocity(0, 0, 0).seek(target);
+
+        var characterTxt = Crafty.e("2D, DOM, Text").attr({
+            x: 10,
+            y: 10,
+            w: 200,
+            h: 50
+        }).css({
+            "font": "12pt Arial",
+            "color": "#000",
+            "text-align": "left"
+        });
+        var targetTxt = Crafty.e("2D, DOM, Text").attr({
+            x: 10,
+            y: 30,
+            w: 200,
+            h: 50
+        }).css({
+            "font": "12pt Arial",
+            "color": "#000",
+            "text-align": "left"
+        });
+        var fleeCharacterTxt = Crafty.e("2D, DOM, Text").attr({
+            x: 10,
+            y: 50,
+            w: 400,
+            h: 50
+        }).css({
+            "font": "12pt Arial",
+            "color": "#000",
+            "text-align": "left"
+        });
+        var seekCharacterTxt = Crafty.e("2D, DOM, Text").attr({
+            x: 10,
+            y: 70,
+            w: 400,
+            h: 50
+        }).css({
+            "font": "12pt Arial",
+            "color": "#000",
+            "text-align": "left"
+        });
+        var altSeekCharacterTxt = Crafty.e("2D, DOM, Text").attr({
+            x: 10,
+            y: 110,
+            w: 400,
+            h: 50
+        }).css({
+            "font": "12pt Arial",
+            "color": "#000",
+            "text-align": "left"
+        });
+
+</script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Triangle</title>
+  <script type="text/javascript" src="crafty-dev-uncompressed.js" remotesrc="http://cdn.craftycomponents.com/crafty-release.js"></script>
+</head>
+<body>
+  <script src="Triangle.js" ></script>
+  <script src="Velocity.js" ></script>
+  <script src="RandomPosition.js" ></script>
+  <script src="Position.js" ></script>
+  <script src="Steering.js" ></script>
+  <script src="History.js" ></script>
+  <script src="DynamicSeek.js" ></script>
+  <script type="text/javascript">
+
+    Crafty.init();
+    Crafty.canvas.init();
+
+    // 1. want to be able to scroll main highlighted object back and forward through history trail
+    // 2. want to be able to play with time - maybe it's fine if we can just get this as a package that runs on a seeker, that will stop
+    // coming to a stationary target ...
+    // 3. want to be able to rotate the triangle
+    // 4. to be able to adjust the position of the history path based on changing some parameters e.g. time to target etc. <-- this would be lovely but not practical???????? need a series of time slices ... and to calculate positions based on parameters for given time slice ...
+
+    // so either I want a print out of the instantenous 10 velocities <-- seems like this might help resolve question better ...
+    // or I want to dynamically change the number of history items --- no that sounds wrong ...
+
+    // so I've got the history items printed out, and I've also got something similar in a spreadsheet.
+
+    // looking at it feels like it confirms to me that the time to target effects the point at which the kinematic arrival drops
+    // below the max speed, and we start to see deceleration, but the key influence on the deceleration appears to be the decreasing
+    // distance to the target, and timeToTarget is a constant modifier on that.
+
+    // However there is an interaction in that once we drop below the max speed the rate at which we approach the target slows down, 
+    // which effectively leads to a stronger breaking effect ... and we get the same thing whether we have a max speed or not
+    // time to target is controlling how long it takes to get to the target - by reducing the magnitude of the velocity at each step
+    // it further reduces the magnitude of the velocity at the next step because the character has not moved as close to the target
+    // as they would without the timeToTarget penalty, so on the next step the timeToTarget penalty is now penalizing something
+    // smaller than would have been the case if it were not there in the first place, i.e. it has a cumulative effect
+
+    // so key thing is to try this with dynamic systems
+
+    // also think about how to have a control to adjust the positions, values of the history elements ...
+
+    var target = Crafty.e("2D, Canvas, Fourway, Triangle, Position").fourway(3).Triangle(50,50, "#00FF00", 1.0);
+    target.x = 200;
+    target.y = 200;
+    var character = Crafty.e("2D, Canvas, Triangle, Velocity, Position, History, DynamicSeek, Steering").Triangle(50,50, "#FF0000", 1.0).velocity(1,3,0).history(10);
+    character.seek(target);
+    character.x = 800;
+    character.y = 10;
+
+
+    var output = Crafty.e("2D, DOM, Text")
+        .attr({x:10, y:10, w:200, h:50})
+        .css({"font": "10pt Arial", "color": "#000", "text-align": "left"});
+
+
+    Crafty.bind("EnterFrame", function () {
+        var str  = "Radius: "+character._radius;
+        str += "<br/>Max Speed: "+character._maxSpeed;
+        str += "<br/>Slow radius:"+character._slowRadius;     
+        str += "<br/>Max Acceleration:"+character._maxAcceleration;        
+        str += "<br/>Time to target: "+character._timeToTarget;
+        str += "<br/><br/>Velocity Trace: " + character.historyVelocityTrace()+ "</br></br>Position Trace: " + character.historyPositionTrace();
+
+        output.text(str);
+
+    });
+
+  </script>
+</body>
+</html>

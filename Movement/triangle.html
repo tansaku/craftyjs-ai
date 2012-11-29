@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Triangle</title>
+  <script type="text/javascript" src="http://cdn.craftycomponents.com/crafty-release.js"></script>
+</head>
+<body>
+  <script src="triangle.js" ></script>
+  <script type="text/javascript">
+
+    Crafty.init();
+    Crafty.canvas.init();
+
+    var c = Crafty.e("2D, Canvas, Triangle").Triangle(50,50, "#FF0000", 1.0);
+    //c.x += 20;
+    //c.y += 20;
+    var d = c.clone();
+    for(var i=1;i>0;i=i-0.1){
+      d = d.clone();
+      d.alpha = i;
+      d.move('s',10);
+    }
+
+  </script>
+</body>
+</html>
