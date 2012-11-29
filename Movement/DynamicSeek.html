@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <head>  
-    <script type="text/javascript" src="http://cdn.craftycomponents.com/crafty-release.js"></script>
+    <script type="text/javascript" src="crafty-dev-uncompressed.js" remotesrc="http://cdn.craftycomponents.com/crafty-release.js"></script>
 </head>
 <body>
     <script type="text/javascript">
@@ -10,7 +10,7 @@
 Crafty.c("Velocity", {
     _MF_rotation: 0,
     _time: 0.5,
-    _maxSpeed: 2,
+    _maxSpeed: 10,
     init: function() {
         var viewport = Crafty.viewport.rect();
         this._velocity = new Crafty.math.Vector2D();
@@ -55,9 +55,11 @@ Crafty.c("Steering", {
         this.bind("EnterFrame", function() {
             // updates velocity and MF rotation using steering
             this._velocity.add(this._steering.linear.scale(this._time));
-            //this._velocity.x += this._steering.linear.x * this._time;
-            //this._velocity.y += this._steering.linear.y * this._time;
             this._MF_rotation += this._steering.angular * this._time;
+            if (this._velocity.magnitude() > this._maxSpeed) {
+                this._velocity.normalize();
+                this._velocity.scale(this._maxSpeed);
+            }
         });
         return this;
     }
@@ -107,10 +109,12 @@ Crafty.c("DynamicSeek", {
                         this._steeringVector.scale(this._maxAcceleration);
                     }
 
-                    this.rotation = this.getNewOrientation();
+                    
                 }
 
                 altSeekCharacterTxt.text("Red steering vector (clipped): " + character._steeringVector.x.toFixed(0) + ", " + character._steeringVector.y.toFixed(0) + ", vel=" + this._steeringVector.magnitude().toFixed(0)+ ", max=" + this._maxSpeed)
+
+                this.rotation = this.getNewOrientation();
 
                 this._angularVelocity = 0; // could be pulled out
                 this._steering.linear = this._steeringVector;
@@ -160,7 +164,7 @@ var target = Crafty.e("2D, DOM, Twoway, RandomPosition, Color, Velocity, Wander"
 var character = Crafty.e("2D, DOM, Twoway, RandomPosition, Color, Velocity, Steering, face, DynamicSeek").twoway(3).attr({
     w: 50,
     h: 50
-}).origin('center').color("red").velocity(0, 0, 0).seek(target);
+}).origin('center').color("red").velocity(-5, 5, 0).seek(target);
 
 var characterTxt = Crafty.e("2D, DOM, Text").attr({
     x: 10,
