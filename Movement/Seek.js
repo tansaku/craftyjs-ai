@@ -36,6 +36,7 @@ Crafty.c("Seek", {
 		{
 			// We need to move to our target, we’d like to
 			// get there in timeToTarget seconds
+			if(this._timeToTarget === 0) this._timeToTarget = 0.0001;
 			this._steeringVector.x /= this._timeToTarget;
 			this._steeringVector.y /= this._timeToTarget;
 			this.checkNotNaN(this._steeringVector);
@@ -49,17 +50,16 @@ Crafty.c("Seek", {
 	},
     init: function() {
         this.requires("Velocity").bind("EnterFrame");
-        this.bind("EnterFrame",function() {
-            this.update();
-        });
+        this.bind("EnterFrame",this.updateSeek);
         return this;
     },
-    update: function(){
+    updateSeek: function(){
        if(this._target){
 			this._targetVector = this.setTargetVector();
 			this._targetDistanceVector = this.setTargetDistanceVector();
 
 			this._steeringVector = this.updateSteeringVector();
+			//debugger
 			this.checkNotNaN(this._steeringVector);
 			this.arrival();
 			this.checkNotNaN(this._steeringVector);

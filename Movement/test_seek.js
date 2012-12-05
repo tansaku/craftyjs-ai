@@ -27,15 +27,16 @@ test( "testing update", function() {
   var character = Crafty.e("2D, Velocity, Seek").attr({w: 31, h: 42}).origin(15,30).velocity(2,1,0).seek(target);
   character.attr({x:10, y: 20});
   //debugger
-  character.update();
+  character.updateSeek();
   ok(!isNaN(character._steeringVector.x), "update should not make steering vector NaN" );
-    debugger
+    //debugger
   equal(character._targetVector.x,target.x);
   equal(character._targetVector.y,target.y);
   equal(character._targetDistanceVector.x,character._targetVector.x - character.x);
   equal(character._targetDistanceVector.y,character._targetVector.y - character.y);
-  equal(character._steeringVector.x,character._targetVector.x - character.x);
-  equal(character._steeringVector.y,character._targetVector.y - character.y);
+  // These will fail unless we take timeToTarget into account
+  equal(character._steeringVector.x,(character._targetVector.x - character.x)/character._timeToTarget);
+  equal(character._steeringVector.y,(character._targetVector.y - character.y)/character._timeToTarget);
   // TODO assert that these are all not NaNs
   // adjust assertions taking into account arrival update thing ...
 

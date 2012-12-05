@@ -5,20 +5,18 @@ Crafty.c("Velocity",{
     init:function(){
 	    this._viewport = Crafty.viewport.rect();
         this._velocity = new Crafty.math.Vector2D();
-        this.bind("EnterFrame", function () {
-
-            // TODO extract this so that we can call it by history fundion TODO
-
-            // updates position according to current velocity wrapped for toroid
-            //this.x = (viewport._w + this.x + this._velocity.x * this._time) % viewport._w;
-            //this.y = (viewport._h + this.y + this._velocity.y * this._time) % viewport._h;
-
-            this.x = this.newXPosition();
-            this.y = this.newYPosition();
-			this.rotation += this._MF_rotation * this._time; 
-
-        });
+        this.bind("EnterFrame", this.updateVelocity);
         return this;
+    },
+    updateVelocity: function () {
+	    // old approach to updating position according to current velocity wrapped for toroid
+	    //this.x = (viewport._w + this.x + this._velocity.x * this._time) % viewport._w;
+	    //this.y = (viewport._h + this.y + this._velocity.y * this._time) % viewport._h;
+
+	    this.x = this.newXPosition();
+	    this.y = this.newYPosition();
+		this.rotation += this._MF_rotation * this._time; 
+		//debugger
     },
     newXPosition: function(){
 	  return this.newPosition(this.x, this._velocity.x, this._viewport._w);
