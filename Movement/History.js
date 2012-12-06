@@ -96,7 +96,7 @@ Crafty.c("History", {
 
     //debugger
     for(var i=0;i<this.historyArray.length;i++){
-      debugger
+      //debugger
       if(typeof this.historyArray[i+1] === "object"){
         // TODO update what the velocity should have been
         //debugger
