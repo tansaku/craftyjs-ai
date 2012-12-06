@@ -12,6 +12,16 @@
   <style>#timeToTargetSlider { margin: 10px; }  </style>
 </head>
 <body>
+  <div>this simple demo has the character (red triangle) move to the target (green triangle) at a speed propotional to the distance vector between them, divided by the timeToTarget and clipped by the maximum speed.  More complex <a href="historyDynamic.html">dynamic demo</a> in progress</div>
+  <div><ol><li>top slider: radius = equals distance from target before we stop moving</li>
+  <li>middle slider: maximum speed</li>
+  <li>bottom slider: time to target = how many seconds it takes to get to the target</li></ol></div>
+
+  
+  <div>   TODO LIST</div>
+   <ol><li>would like to be able to set start parameters - just some button to press that causes Crafty.init() and Crafty.canvas.init()? or just Crafty.timer.pause? would need to have other items off canvas ... alternatively could have reset button that puts character (and target) back to original location and clears history ...</li>
+    <li>would like to be able to scroll main object back and forward through path - just switch which clone is highlighted?  or actually re run with history detached?</li>
+    <li>would like to have history path extended to destination state ...</li></ol></div>
   <div id='radiusSlider'></div>
   <div id='maxSpeedSlider'></div>
   <div id='timeToTargetSlider'></div>
