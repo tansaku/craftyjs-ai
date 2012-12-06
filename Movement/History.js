@@ -49,8 +49,10 @@ Crafty.c("History", {
           // would be interesting if we could avoid adding new items in same places as previous ones
           if(this.realCounter > this.maxNoObjects){
             var dump = this.historyArray.shift();
-            if(dump !== null && dump != undefined)
+            if(dump !== null && dump != undefined){
               dump.destroy();
+              this.realCounter--; // TODO this was missing and really I should have some test for it ...
+            }
           }
           //debugger
 
@@ -80,41 +82,45 @@ Crafty.c("History", {
     }
     return str;
   },
-  adjustHistory: function(timeToTarget, maxSpeed, radius){
-    // TODO could we look backwards through the time steps 
+  adjustHistory: function(){
+    // we could look backwards through the time steps 
     // working out where we would have been and adjust the 
     // positions of the clones?
 
-    // ideally one would start with the first element in the 
+    // however currently we start with the first element in the 
     // array and work out where we should have been on the 
     // next step, and the next step, and then get to the 
     // 5th empty element and then move that and so on
     // should work if we have access to the relevant seek and 
     // velocity code
 
-    // and of course what would be lovely would be to have some 
-    // sliders to adjust the parameters back and forth
-    // not clear if Crafty can provide those for us?  perhaps jquery
-    // or mootools????
     //debugger
     for(var i=0;i<this.historyArray.length;i++){
       debugger
       if(typeof this.historyArray[i+1] === "object"){
         // TODO update what the velocity should have been
         //debugger
-        this.historyArray[i]._timeToTarget = timeToTarget;
-        this.historyArray[i]._maxSpeed = maxSpeed;
-        this.historyArray[i]._radius = radius;
-        this.historyArray[i+1]._timeToTarget = timeToTarget;
-        this.historyArray[i+1]._maxSpeed = maxSpeed;
-        this.historyArray[i+1]._radius = radius;
-        // need to do this for number of frames we jump?
+        this.historyArray[i]._timeToTarget = this._timeToTarget;
+        this.historyArray[i]._maxSpeed = this._maxSpeed;
+        this.historyArray[i]._radius = this._radius;
+        this.historyArray[i]._maxAccel = this._maxAccel;
+        this.historyArray[i]._slowRadius = this._slowRadius;
+        this.historyArray[i+1]._timeToTarget = this._timeToTarget;
+        this.historyArray[i+1]._maxSpeed = this._maxSpeed;
+        this.historyArray[i+1]._radius = this._radius;
+        this.historyArray[i+1]._maxAcceleration = this._maxAcceleration;
+        this.historyArray[i+1]._slowRadius = this._slowRadius;
+        
 
-        this.historyArray[i].updateSeek(); // work out what our velocity would have been 
+        this.historyArray[i].seekEnterFrame(); // work out what our velocity would have been 
         this.historyArray[i+1].x = this.historyArray[i].newXPosition(); // put the next item in this position
         this.historyArray[i+1].y = this.historyArray[i].newYPosition();
+        // need to do this for number of frames we jump TODO fix hard-coding issue here ...
         for(var j=0;j<4;j++){
-          this.historyArray[i+1].updateSeek(); // now repeat calculating new velocity
+          this.historyArray[i+1].seekEnterFrame(); // now repeat calculating new velocity
+          if(typeof this.historyArray[i+1].steeringEnterFrame !== "undefined"){
+            this.historyArray[i+1].steeringEnterFrame(); //  if steering is defined ...
+          }
           this.historyArray[i+1].updateVelocity(); // and update new position for the 4 extra time steps we need
         }
 

@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <title>Triangle</title>
-  <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
-  <script src="crafty-dev-uncompressed.js" remotesrc="http://cdn.craftycomponents.com/crafty-release.js"></script>
-  <script src="http://code.jquery.com/jquery-1.8.3.js"></script>
-  <script src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
+  <link rel="stylesheet" href="jquery-ui.css" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
+  <script src="crafty-dev-uncompressed.js" src="http://cdn.craftycomponents.com/crafty-release.js"></script>
+  <script src="jquery-1.8.3.js" src="http://code.jquery.com/jquery-1.8.3.js"></script>
+  <script src="jquery-ui.js" src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
   <style>#radiusSlider { margin: 10px; }  </style>
   <style>#maxSpeedSlider { margin: 10px; }  </style>
   <style>#timeToTargetSlider { margin: 10px; }  </style>
@@ -25,11 +25,16 @@
     Crafty.init();
     Crafty.canvas.init();
 
+
+    // A) would like to be able to set start parameters - just some button to press that causes Crafty.init() and Crafty.canvas.init()? or just Crafty.timer.pause? would need to have other items off canvas ... alternatively could have reset button that puts character (and target) back to original location and clears history ...
+    // B) would like to be able to scroll main object back and forward through path - just switch which clone is highlighted?  or actually re run with history detached?
+    // C) would like to have history path extended to destination state ...
+
     // 1. want to be able to scroll main highlighted object back and forward through history trail
     // 2. want to be able to play with time - maybe it's fine if we can just get this as a package that runs on a seeker, that will stop
     // coming to a stationary target ...
     // 3. want to be able to rotate the triangle
-    // 4. to be able to adjust the position of the history path based on changing some parameters e.g. time to target etc. <-- this would be lovely but not practical???????? need a series of time slices ... and to calculate positions based on parameters for given time slice ...
+    // 4. to be able to adjust the position of the history path based on changing some parameters e.g. time to target etc. <-- this would be lovely but not practical???????? need a series of time slices ... and to calculate positions based on parameters for given time slice ...  DONE?
 
     // so either I want a print out of the instantenous 10 velocities <-- seems like this might help resolve question better ...
     // or I want to dynamically change the number of history items --- no that sounds wrong ...
@@ -77,7 +82,7 @@
         .css({"font": "10pt Arial", "color": "#000", "text-align": "left"}); 
 
     var showText = function(){      
-        characterTxt.text("<div id='myslider'></div>Radius: "+character._radius);
+        characterTxt.text("Radius: "+character._radius);
         targetTxt.text("Max Speed: "+character._maxSpeed);
         seekCharacterTxt.text("Time to target: "+character._timeToTarget);
         altSeekCharacterTxt.text("Velocity Trace: " + character.historyVelocityTrace()+ "</br></br>Position Trace: " + character.historyPositionTrace());
@@ -112,6 +117,15 @@
             character.adjustHistory(character._timeToTarget, character._maxSpeed, character._radius);
         }
     });
+    $( "#myslider" ).slider({
+        value: character._radius,
+        slide: function( event, ui ) {
+            character._radius = ui.value;
+            // and call update history ...
+            character.adjustHistory(character._timeToTarget, character._maxSpeed, character._radius);
+        }
+    });
+
     // TODO, so then I need something to call character.adjustHistory() as a function of changing the relevant parameters ....
 
   </script>

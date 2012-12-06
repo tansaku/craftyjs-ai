@@ -27,7 +27,7 @@ test( "testing update", function() {
   var character = Crafty.e("2D, Velocity, Seek").attr({w: 31, h: 42}).origin(15,30).velocity(2,1,0).seek(target);
   character.attr({x:10, y: 20});
   //debugger
-  character.updateSeek();
+  character.seekEnterFrame();
   ok(!isNaN(character._steeringVector.x), "update should not make steering vector NaN" );
     //debugger
   equal(character._targetVector.x,target.x);

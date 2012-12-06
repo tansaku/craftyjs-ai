@@ -7,22 +7,22 @@ Crafty.c("DynamicSeek", {
     init: function() {
         var viewport = Crafty.viewport.rect();
         this.requires("Steering").bind("EnterFrame");
-        this.bind("EnterFrame", function() {
-            if (this._target) {
-                //debugger;
-                this._steeringVector = this._target.position().subtract(this.position());
-            
-                this._steeringVector.normalize();
-                this._steeringVector.scale(this._maxAcceleration);
+        this.bind("EnterFrame",this.seekEnterFrame);
+    },
+    seekEnterFrame: function(){
+        if(this._target){
+            //debugger;
+            this._steeringVector = this._target.position().subtract(this.position());
 
-                this.rotation = this.getNewOrientation();
+            this._steeringVector.normalize();
+            this._steeringVector.scale(this._maxAcceleration);
 
-                this._angularVelocity = 0; // could be pulled out
-                this._steering.linear = this._steeringVector;
-                this._steering.angular = this._angularVelocity;
-            }
-            return this;
-        });
+            this.rotation = this.getNewOrientation();
+
+            this._angularVelocity = 0; // could be pulled out
+            this._steering.linear = this._steeringVector;
+            this._steering.angular = this._angularVelocity;
+        }
     },
     seek: function(target) {
         this._target = target;

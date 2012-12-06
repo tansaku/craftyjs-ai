@@ -50,10 +50,10 @@ Crafty.c("Seek", {
 	},
     init: function() {
         this.requires("Velocity").bind("EnterFrame");
-        this.bind("EnterFrame",this.updateSeek);
+        this.bind("EnterFrame",this.seekEnterFrame);
         return this;
     },
-    updateSeek: function(){
+    seekEnterFrame: function(){
        if(this._target){
 			this._targetVector = this.setTargetVector();
 			this._targetDistanceVector = this.setTargetDistanceVector();
