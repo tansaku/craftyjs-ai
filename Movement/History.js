@@ -37,7 +37,7 @@ Crafty.c("History", {
           var xmatch = this.existingClonesX[this.x.toFixed(0)];
           var ymatch = this.existingClonesY[this.y.toFixed(0)];
           if(this.counter % 5 === 1){
-            //debugger
+            // am currently avoiding creating clones in same location, but might want that in future ...
             if(xmatch === undefined || (xmatch !== ymatch)){
               clone = this.clone();
               clone._target = this._target; // for some reason target is not copied over
@@ -129,7 +129,7 @@ Crafty.c("History", {
           if(typeof this.historyArray[i+1].steeringEnterFrame !== "undefined"){
             this.historyArray[i+1].steeringEnterFrame(); //  if steering is defined ...
           }
-          this.historyArray[i+1].updateVelocity(); // and update new position for the 4 extra time steps we need
+          this.historyArray[i+1].updatePosition(); // and update new position for the 4 extra time steps we need
         }
 
 

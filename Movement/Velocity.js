@@ -5,10 +5,10 @@ Crafty.c("Velocity",{
     init:function(){
 	    this._viewport = Crafty.viewport.rect();
         this._velocity = new Crafty.math.Vector2D();
-        this.bind("EnterFrame", this.updateVelocity);
+        this.bind("EnterFrame", this.updatePosition);
         return this;
     },
-    updateVelocity: function () {
+    updatePosition: function () {
 	    // old approach to updating position according to current velocity wrapped for toroid
 	    //this.x = (viewport._w + this.x + this._velocity.x * this._time) % viewport._w;
 	    //this.y = (viewport._h + this.y + this._velocity.y * this._time) % viewport._h;
