@@ -14,6 +14,8 @@
   <style>#maxAccelSlider { margin: 10px; }  </style>
 </head>
 <body>
+    <div>This more complex demo has the character (red triangle) move to the target (green triangle) by setting a desired speed that is zero if inside the radius, and proportional to the distance vector between them, divided by the slowRadius and the timeToTarget and clipped by the maximum acceleration.  Simpler <a href="historyKinematic.html">kinematic demo</a>.  Historical positions of the character are shown (faded red triangles), and in principle these can be modified dynamically, although effects are iunpredictable in this demo. Hit reset button to re-run demo with new parameter settings.</div>
+
   <p>
     <label for="radius">Radius:</label>
     <input type="text" id="radius" style="border: 0; color: #f6931f; font-weight: bold;" />
