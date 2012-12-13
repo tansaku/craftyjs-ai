@@ -14,22 +14,52 @@
   <style>#maxAccelSlider { margin: 10px; }  </style>
 </head>
 <body>
-  <div id='radiusSlider'></div>
-  <div id='maxSpeedSlider'></div>
-  <div id='slowRadiusSlider'></div>
-  <div id='maxAccelSlider'></div>
-  <div id='timeToTargetSlider'></div>
+  <p>
+    <label for="radius">Radius:</label>
+    <input type="text" id="radius" style="border: 0; color: #f6931f; font-weight: bold;" />
+  </p>
+  <div id='radiusSlider' style="width: 80%"></div>
+  <p>
+    <label for="maxSpeed">Max Speed:</label>
+    <input type="text" id="maxSpeed" style="border: 0; color: #f6931f; font-weight: bold;" />
+  </p>
+  <div id='maxSpeedSlider' style="width: 80%"></div>
+  <p>
+    <label for="slowRadius">Slow Radius:</label>
+    <input type="text" id="slowRadius" style="border: 0; color: #f6931f; font-weight: bold;" />
+  </p>  
+  <div id='slowRadiusSlider' style="width: 80%"></div>
+  <p>
+    <label for="maxAccel">Max Accel:</label>
+    <input type="text" id="maxAccel" style="border: 0; color: #f6931f; font-weight: bold;" />
+  </p>
+  <div id='maxAccelSlider' style="width: 80%"></div>
+  <p>
+    <label for="timeToTarget">Time to target:</label>
+    <input type="text" id="timeToTarget" style="border: 0; color: #f6931f; font-weight: bold;" />
+  </p>
+  <div id='timeToTargetSlider' style="width: 80%"></div>
+  <input type="submit" value="Reset" />
+  <div id="cr-stage"></div>
+
   <script src="Triangle.js" ></script>
   <script src="Velocity.js" ></script>
   <script src="RandomPosition.js" ></script>
   <script src="Position.js" ></script>
   <script src="Steering.js" ></script>
   <script src="History.js" ></script>
-  <script src="DynamicSeek.js" ></script>
+  <script src="DynamicArrive.js" ></script>
   <script type="text/javascript">
 
-    Crafty.init();
-    Crafty.canvas.init();
+   $(function() {
+      $( "input[type=submit]" )
+          .button()
+          .click(function( event ) {
+              event.preventDefault();
+              bootUp();
+          });
+    });
+
 
     // 1. want to be able to scroll main highlighted object back and forward through history trail
     // 2. want to be able to play with time - maybe it's fine if we can just get this as a package that runs on a seeker, that will stop
@@ -57,32 +87,12 @@
 
     // also think about how to have a control to adjust the positions, values of the history elements ...
 
+    Crafty.init(800,800);
+    Crafty.canvas.init();
     var target = Crafty.e("2D, Canvas, Fourway, Triangle, Position").fourway(3).Triangle(50,50, "#00FF00", 1.0);
     target.x = 200;
     target.y = 200;
-    var character = Crafty.e("2D, Canvas, Triangle, Velocity, Position, History, DynamicSeek, Steering").Triangle(50,50, "#FF0000", 1.0).velocity(1,3,0).history(25);
-    character.seek(target);
-    character.x = 300;
-    character.y = 300;
-
-
-    var output = Crafty.e("2D, DOM, Text")
-        .attr({x:10, y:10, w:200, h:50})
-        .css({"font": "10pt Arial", "color": "#000", "text-align": "left"});
-
-
-    Crafty.bind("EnterFrame", function () {
-        var str  = "Radius: "+character._radius;
-        str += "<br/>Max Speed: "+character._maxSpeed;
-        str += "<br/>Slow radius:"+character._slowRadius;     
-        str += "<br/>Max Acceleration:"+character._maxAcceleration;        
-        str += "<br/>Time to target: "+character._timeToTarget;
-        str += "<br/><br/>Velocity Trace: " + character.historyVelocityTrace()+ "</br></br>Position Trace: " + character.historyPositionTrace();
-
-        output.text(str);
-
-    });
-    // TODO would like to be able to set starting parameters using the slider - would just need a start button to kick things off????
+    var character = Crafty.e("2D, Canvas, Triangle, Velocity, Position, History, DynamicArrive, Steering").Triangle(50,50, "#FF0000", 1.0).velocity(1,3,0).history(25);
 
     $( "#timeToTargetSlider" ).slider({
         value: character._timeToTarget,
@@ -109,7 +119,7 @@
         }
     });
     $( "#slowRadiusSlider" ).slider({
-        value: character._radius,
+        value: character._slowRadius,
         slide: function( event, ui ) {
             character._slowRadius = ui.value;
             // and call update history ...
@@ -124,6 +134,37 @@
             character.adjustHistory();
         }
     });
+ 
+    var bootUp = function(){
+
+      character.reset();
+      character.seek(target);
+      character.x = 500;
+      character.y = 300;
+    };
+
+    bootUp();
+
+
+    var output = Crafty.e("2D, DOM, Text")
+        .attr({x:10, y:10, w:200, h:50})
+        .css({"font": "10pt Arial", "color": "#000", "text-align": "left"});
+
+    var showText = function(){      
+        $( "#radius" ).val( character._radius );
+        $( "#maxSpeed" ).val( character._maxSpeed );
+        $( "#slowRadius" ).val( character._slowRadius );
+        $( "#maxAccel" ).val( character._maxAccel );
+        $( "#timeToTarget" ).val( character._timeToTarget );
+        output.text("Velocity Trace: " + character.historyVelocityTrace()+ "</br></br>Position Trace: " + character.historyPositionTrace());
+    };
+
+
+    Crafty.bind("EnterFrame", function () {
+        showText();
+    });
+    // TODO would like to be able to set starting parameters using the slider - would just need a start button to kick things off????
+
 
   </script>
 </body>

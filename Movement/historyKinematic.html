@@ -30,17 +30,17 @@
     <label for="radius">Radius:</label>
     <input type="text" id="radius" style="border: 0; color: #f6931f; font-weight: bold;" />
   </p>
-  <div id='radiusSlider' style="width: 80%; margin: 15px;"></div>
+  <div id='radiusSlider' style="width: 80%"></div>
   <p>
     <label for="maxSpeed">Max Speed:</label>
     <input type="text" id="maxSpeed" style="border: 0; color: #f6931f; font-weight: bold;" />
   </p>
-  <div id='maxSpeedSlider' style="width: 80%; margin: 15px;"></div>
+  <div id='maxSpeedSlider' style="width: 80%"></div>
   <p>
     <label for="timeToTarget">Time to target:</label>
     <input type="text" id="timeToTarget" style="border: 0; color: #f6931f; font-weight: bold;" />
   </p>
-  <div id='timeToTargetSlider' style="width: 80%; margin: 15px;"></div>
+  <div id='timeToTargetSlider' style="width: 80%"></div>
   <input type="submit" value="Reset" />
   <div id="cr-stage"></div>
   <script src="Triangle.js" ></script>
@@ -130,7 +130,7 @@
         slide: function( event, ui ) {
             character._timeToTarget = ui.value;
             // and call update history ...
-            character.adjustHistory(character._timeToTarget, character._maxSpeed, character._radius);
+            character.adjustHistory();
         }
     });
     $( "#maxSpeedSlider" ).slider({
@@ -138,7 +138,7 @@
         slide: function( event, ui ) {
             character._maxSpeed = ui.value;
             // and call update history ...
-            character.adjustHistory(character._timeToTarget, character._maxSpeed, character._radius);
+            character.adjustHistory();
         }
     });
     $( "#radiusSlider" ).slider({
@@ -146,7 +146,7 @@
         slide: function( event, ui ) {
             character._radius = ui.value;
             // and call update history ...
-            character.adjustHistory(character._timeToTarget, character._maxSpeed, character._radius);
+            character.adjustHistory();
         }
     });
 
