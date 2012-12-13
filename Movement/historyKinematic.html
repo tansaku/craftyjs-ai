@@ -19,12 +19,27 @@
 
   
   <div>   TODO LIST</div>
-   <ol><li>would like to be able to set start parameters - just some button to press that causes Crafty.init() and Crafty.canvas.init()? or just Crafty.timer.pause? would need to have other items off canvas ... alternatively could have reset button that puts character (and target) back to original location and clears history ...</li>
-    <li>would like to be able to scroll main object back and forward through path - just switch which clone is highlighted?  or actually re run with history detached?</li>
+   <ol><li>proper unit tests on everything ...</li>
+    <li>would like to be able to scroll main object back and forward through path - just switch which clone is highlighted?  unnecessary now we can re run with history detached?</li>
     <li>would like to have history path extended to destination state ...</li></ol></div>
-  <div id='radiusSlider'></div>
-  <div id='maxSpeedSlider'></div>
-  <div id='timeToTargetSlider'></div>
+
+
+  <p>
+    <label for="radius">Radius:</label>
+    <input type="text" id="radius" style="border: 0; color: #f6931f; font-weight: bold;" />
+  </p>
+  <div id='radiusSlider' style="width: 80%; margin: 15px;"></div>
+  <p>
+    <label for="maxSpeed">Max Speed:</label>
+    <input type="text" id="maxSpeed" style="border: 0; color: #f6931f; font-weight: bold;" />
+  </p>
+  <div id='maxSpeedSlider' style="width: 80%; margin: 15px;"></div>
+  <p>
+    <label for="timeToTarget">Time to target:</label>
+    <input type="text" id="timeToTarget" style="border: 0; color: #f6931f; font-weight: bold;" />
+  </p>
+  <div id='timeToTargetSlider' style="width: 80%; margin: 15px;"></div>
+  <input type="submit" value="Reset" />
   <script src="Triangle.js" ></script>
   <script src="Velocity.js" ></script>
   <script src="RandomPosition.js" ></script>
@@ -32,8 +47,15 @@
   <script src="Seek.js" ></script>
   <script type="text/javascript">
 
-    Crafty.init();
-    Crafty.canvas.init();
+
+    $(function() {
+      $( "input[type=submit]" )
+          .button()
+          .click(function( event ) {
+              event.preventDefault();
+              bootUp();
+          });
+    });
 
 
     // A) would like to be able to set start parameters - just some button to press that causes Crafty.init() and Crafty.canvas.init()? or just Crafty.timer.pause? would need to have other items off canvas ... alternatively could have reset button that puts character (and target) back to original location and clears history ...
@@ -65,36 +87,32 @@
     // so key thing is to try this with dynamic systems
 
     // also think about how to have a control to adjust the positions, values of the history elements ...
-
+    Crafty.init();
+    Crafty.canvas.init();
     var target = Crafty.e("2D, Canvas, Fourway, Triangle").fourway(3).Triangle(50,50, "#00FF00", 1.0);
-    target.x = 400;
-    target.y = 200;
     var character = Crafty.e("2D, Canvas, Triangle, Velocity, History, Seek").Triangle(50,50, "#FF0000", 1.0).velocity(1,3,0).history(100);
-    character.seek(target);
-    character.x = 200;
-    character.y = 0;
+ 
+    var bootUp = function(){
+      target.x = 400;
+      target.y = 200;
+      character.reset();
+      character.seek(target);
+      character.x = 200;
+      character.y = 0;
+    };
 
+    bootUp();
 
-    var characterTxt = Crafty.e("2D, DOM, Text")
-        .attr({x:10, y:10, w:200, h:50})
-        .css({"font": "10pt Arial", "color": "#000", "text-align": "left"});
-    var targetTxt = Crafty.e("2D, DOM, Text")
-        .attr({x:10, y:30, w:200, h:50})
-        .css({"font": "10pt Arial", "color": "#000", "text-align": "left"}); 
-    var fleeCharacterTxt = Crafty.e("2D, DOM, Text")
-        .attr({x:10, y:50, w:200, h:50})
-        .css({"font": "10pt Arial", "color": "#000", "text-align": "left"});
-    var seekCharacterTxt = Crafty.e("2D, DOM, Text")
-        .attr({x:10, y:70, w:200, h:50})
-        .css({"font": "10pt Arial", "color": "#000", "text-align": "left"}); 
+    // so these could be drawn off campus rather than on canvas?
+
     var altSeekCharacterTxt = Crafty.e("2D, DOM, Text")
-        .attr({x:10, y:90, w:200, h:50})
+        .attr({x:10, y:10, w:200, h:50})
         .css({"font": "10pt Arial", "color": "#000", "text-align": "left"}); 
 
     var showText = function(){      
-        characterTxt.text("Radius: "+character._radius);
-        targetTxt.text("Max Speed: "+character._maxSpeed);
-        seekCharacterTxt.text("Time to target: "+character._timeToTarget);
+        $( "#radius" ).val( character._radius );
+        $( "#maxSpeed" ).val( character._maxSpeed );
+        $( "#timeToTarget" ).val( character._timeToTarget );
         altSeekCharacterTxt.text("Velocity Trace: " + character.historyVelocityTrace()+ "</br></br>Position Trace: " + character.historyPositionTrace());
     };
 
@@ -127,14 +145,8 @@
             character.adjustHistory(character._timeToTarget, character._maxSpeed, character._radius);
         }
     });
-    $( "#myslider" ).slider({
-        value: character._radius,
-        slide: function( event, ui ) {
-            character._radius = ui.value;
-            // and call update history ...
-            character.adjustHistory(character._timeToTarget, character._maxSpeed, character._radius);
-        }
-    });
+
+
 
     // TODO, so then I need something to call character.adjustHistory() as a function of changing the relevant parameters ....
 

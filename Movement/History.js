@@ -8,12 +8,20 @@ Crafty.c("History", {
       
       return this;  
   },
-  init: function() {
+  reset: function(){
+      //if(typeof this.historyArray === "object"){
+        for(var i in this.historyArray){
+          this.historyArray[i].destroy();
+        }
+      //}
       this.historyArray = [];
       this.counter = 0;
       this.realCounter = 0
       this.existingClonesX = {};
       this.existingClonesY = {};
+  },
+  init: function() {
+      this.reset();
       // TODO assumes velocity - need to declare/handle that requirement
       // loop through list of items in history and draw stationary object there
       this.requires("Velocity").bind("EnterFrame");
