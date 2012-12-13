@@ -5,3 +5,5 @@ AI Game techniques from [Millington &amp; Funge's Game AI book](http://ai4g.com/
 
 * [Kinematic Arrive Interactive Demo](http://tansaku.github.com/craftyjs-ai/Movement/historyKinematic.html)
 * [Dynamic Arrive Interactive Demo](http://tansaku.github.com/craftyjs-ai/Movement/historyDynamic.html)
+
+* [Unit tests](http://tansaku.github.com/craftyjs-ai/Movement/unit_tests.html)
